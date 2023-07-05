@@ -1,5 +1,5 @@
-import React, { InputHTMLAttributes } from 'react'
-import { RegisterOptions, UseFormRegister } from 'react-hook-form'
+import { InputHTMLAttributes } from 'react'
+import { UseFormRegister } from 'react-hook-form'
 
 interface InputType extends InputHTMLAttributes<HTMLInputElement> {
   register?: UseFormRegister<any>

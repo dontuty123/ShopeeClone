@@ -1,6 +1,5 @@
 import { useFloating, FloatingPortal, arrow, shift, offset } from '@floating-ui/react-dom-interactions'
 import { useRef, useState, useId } from 'react'
-import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Props {
