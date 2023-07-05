@@ -2,4 +2,4 @@
 
 > Build command: npm run dev
 
-**🔐Account for testing**: `user3@gmail.com` / `hackerlord`
+**🔐Account for testing**: `newuser@gmail.com` / `123123`
