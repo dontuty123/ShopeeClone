@@ -8,6 +8,7 @@ import ProductRating from 'src/components/ProductRating'
 import { ProductListConfig } from 'src/types/product.type'
 import { formatCurrency, formatNumberToSocialStyle, getIdFromNameId, rateSale } from 'src/utils/utils'
 import Product from '../ProductList/components/Product'
+import { toast } from 'react-toastify'
 
 export default function ProductDetail() {
   const { nameId } = useParams()
@@ -76,6 +77,10 @@ export default function ProductDetail() {
 
   const handleRemoveZoom = () => {
     imageRef.current?.removeAttribute('style')
+  }
+
+  const toasting = () => {
+    toast.warning('Tính năng đang được phát triển')
   }
 
   if (!product) {
@@ -207,7 +212,10 @@ export default function ProductDetail() {
                 <div className='text-sm-text-gray-500 ml-6'>{product.quantity} Sản phẩm có sẵn</div>
               </div>
               <div className='mt-8 flex items-center'>
-                <button className='flex h-12 items-center justify-center rounded-sm border border-orange bg-orange/10 px-5 capitalize text-orange shadow-sm hover:bg-orange/5 '>
+                <button
+                  onClick={toasting}
+                  className='flex h-12 items-center justify-center rounded-sm border border-orange bg-orange/10 px-5 capitalize text-orange shadow-sm hover:bg-orange/5 '
+                >
                   <svg
                     enableBackground='new 0 0 15 15'
                     viewBox='0 0 15 15'
@@ -233,7 +241,10 @@ export default function ProductDetail() {
                   </svg>
                   Thêm vào giỏ hàng
                 </button>
-                <button className=' ml-4 flex h-12 min-w-[5rem] items-center rounded-sm bg-orange px-5 capitalize text-white shadow-sm outline-none hover:bg-orange/90'>
+                <button
+                  onClick={toasting}
+                  className=' ml-4 flex h-12 min-w-[5rem] items-center rounded-sm bg-orange px-5 capitalize text-white shadow-sm outline-none hover:bg-orange/90'
+                >
                   Mua ngay
                 </button>
               </div>
