@@ -18,4 +18,12 @@ export default defineConfig({
       src: path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['linked-dep'],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/linked-dep/, /node_modules/],
+    },
+  },
 })
