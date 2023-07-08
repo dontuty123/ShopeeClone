@@ -1,6 +1,6 @@
 import { Link, createSearchParams, useNavigate } from 'react-router-dom'
 import Popover from '../Popover'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import authApi from 'src/apis/auth.api'
 import { useContext } from 'react'
 import { AppContext } from 'src/context/app.context'
@@ -11,10 +11,16 @@ import { Schema, schema } from 'src/utils/rules'
 
 import { yupResolver } from '@hookform/resolvers/yup'
 import omit from 'lodash/omit'
+import { PurchasesStatus } from 'src/constants/pruchase'
+import purchaseApi from 'src/apis/pruchase.api'
+import { formatCurrency } from 'src/utils/utils'
+import { queryClient } from 'src/main'
 
 type FormData = Pick<Schema, 'name'>
 
 const nameSchema = schema.pick(['name'])
+
+const MAX_PURCHASE = 5
 
 export default function Header() {
   const { setIsAuthenticated, isAuthenticated, setProfile, profile } = useContext(AppContext)
@@ -27,11 +33,20 @@ export default function Header() {
     resolver: yupResolver<any>(nameSchema),
   })
 
+  const { data: purchasesInCartData } = useQuery({
+    queryKey: ['purchases', { status: PurchasesStatus.inCart }],
+    queryFn: () => purchaseApi.getPurchases({ status: PurchasesStatus.inCart }),
+    enabled: isAuthenticated,
+  })
+
+  const purchasesInCart = purchasesInCartData?.data.data
+
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
     onSuccess: () => {
       setIsAuthenticated(false)
       setProfile(null)
+      queryClient.removeQueries({ queryKey: ['purchases', { status: PurchasesStatus.inCart }] })
     },
   })
 
@@ -67,7 +82,7 @@ export default function Header() {
             renderPopover={
               <div className='relative ml-[-6rem] rounded-sm border border-gray-200 bg-white pr-[7rem] shadow-md'>
                 <div className='flex flex-col px-3 py-2'>
-                  <button className='  mr-2 py-2 hover:text-orange'>Tiếng Việt</button>
+                  <button className='mr-2 py-2 hover:text-orange'>Tiếng Việt</button>
                   <button className='mr-2 mt-2  py-2 hover:text-orange'>English</button>
                 </div>
               </div>
@@ -180,108 +195,53 @@ export default function Header() {
             <Popover
               renderPopover={
                 <div className='relative mt-2 max-w-[400px] cursor-default rounded-sm  border  border-gray-200 bg-white text-sm shadow-md'>
-                  <div className=''>
-                    <div className=' flex h-10 items-center pl-[10px] capitalize text-gray-400'>Sản phẩm mới thêm</div>
-                    <div className='mt5 '>
-                      <div className='flex p-[10px] hover:bg-gray-100'>
-                        <div className='py-auto h-10 w-10 flex-shrink-0  '>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/sg-11134201-22090-ys51ff4x6xhvef_tn'
-                            alt='anh'
-                          />
-                        </div>
-                        <div className=' ml-2 flex-grow truncate'>
-                          <div className=' truncate'>
-                            Đồ Bộ Quần Áo Thể Thao Nam Mùa Hè Chất Thun Lạnh Co Giãn 4 Chiều 5 Màu SPORT
+                  {purchasesInCart && purchasesInCart?.length > 0 ? (
+                    <div className=''>
+                      <div className='flex h-10 items-center pl-[10px] capitalize text-gray-400'>Sản phẩm mới thêm</div>
+                      <div className='mt5 '>
+                        {purchasesInCart.slice(0, MAX_PURCHASE).map((purchase) => (
+                          <div className='flex p-[10px] hover:bg-gray-100' key={purchase._id}>
+                            <div className='py-auto h-10 w-10 flex-shrink-0  '>
+                              <img src={purchase.product.image} alt={purchase.product.name} />
+                            </div>
+                            <div className=' ml-2 flex-grow truncate'>
+                              <div className=' truncate'>{purchase.product.name}</div>
+                            </div>
+                            <div className=' ml-2 flex-shrink-0'>
+                              <span className='text-orange'>{formatCurrency(purchase.product.price)}</span>
+                            </div>
                           </div>
-                        </div>
-                        <div className=' ml-2 flex-shrink-0'>
-                          <span className='text-orange'>₫85.000</span>
-                        </div>
+                        ))}
                       </div>
-                      <div className='flex p-[10px] hover:bg-gray-100'>
-                        <div className='py-auto h-10 w-10 flex-shrink-0 '>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/sg-11134201-22090-ys51ff4x6xhvef_tn'
-                            alt='anh'
-                          />
-                        </div>
-                        <div className=' ml-2 flex-grow truncate'>
-                          <div className=' truncate'>
-                            Đồ Bộ Quần Áo Thể Thao Nam Mùa Hè Chất Thun Lạnh Co Giãn 4 Chiều 5 Màu SPORT
-                          </div>
-                        </div>
-                        <div className=' ml-2 flex-shrink-0'>
-                          <span className='text-orange'>₫85.000</span>
-                        </div>
-                      </div>
-                      <div className='flex p-[10px] hover:bg-gray-100'>
-                        <div className='py-auto h-10 w-10 flex-shrink-0 '>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/sg-11134201-22090-ys51ff4x6xhvef_tn'
-                            alt='anh'
-                          />
-                        </div>
-                        <div className=' ml-2 flex-grow truncate'>
-                          <div className=' truncate'>
-                            Đồ Bộ Quần Áo Thể Thao Nam Mùa Hè Chất Thun Lạnh Co Giãn 4 Chiều 5 Màu SPORT
-                          </div>
-                        </div>
-                        <div className=' ml-2 flex-shrink-0'>
-                          <span className='text-orange'>₫85.000</span>
-                        </div>
-                      </div>
-                      <div className='flex p-[10px] hover:bg-gray-100'>
-                        <div className='py-auto h-10 w-10 flex-shrink-0 '>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/sg-11134201-22090-ys51ff4x6xhvef_tn'
-                            alt='anh'
-                          />
-                        </div>
-                        <div className=' ml-2 flex-grow truncate'>
-                          <div className=' truncate'>
-                            Đồ Bộ Quần Áo Thể Thao Nam Mùa Hè Chất Thun Lạnh Co Giãn 4 Chiều 5 Màu SPORT
-                          </div>
-                        </div>
-                        <div className=' ml-2 flex-shrink-0'>
-                          <span className='text-orange'>₫85.000</span>
-                        </div>
-                      </div>
-                      <div className='flex p-[10px] hover:bg-gray-100'>
-                        <div className='py-auto h-10 w-10 flex-shrink-0 '>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/sg-11134201-22090-ys51ff4x6xhvef_tn'
-                            alt='anh'
-                          />
-                        </div>
-                        <div className=' ml-2 flex-grow truncate'>
-                          <div className=' truncate'>
-                            Đồ Bộ Quần Áo Thể Thao Nam Mùa Hè Chất Thun Lạnh Co Giãn 4 Chiều 5 Màu SPORT
-                          </div>
-                        </div>
-                        <div className=' ml-2 flex-shrink-0'>
-                          <span className='text-orange'>₫85.000</span>
-                        </div>
-                      </div>
-                      <div className='flex h-[60px] items-center justify-between p-[10px]'>
+                      <div className=' flex items-center justify-between p-[10px]'>
                         <div className='text-xs capitalize text-gray-500'>
-                          {' '}
-                          <span>175</span>
-                          <span>&nbsp; Thêm hàng vào giỏ</span>
+                          {purchasesInCart.length > MAX_PURCHASE ? purchasesInCart.length - MAX_PURCHASE : ''} Thêm hàng
+                          vào giỏ
                         </div>
                         <Link
-                          to='/'
-                          className='h-full rounded-sm border-none bg-orange px-3 py-3 capitalize text-white hover:bg-[#FF7F50]'
+                          to={path.cart}
+                          className='rounded-sm bg-orange px-4 py-2 capitalize text-white hover:bg-opacity-90'
                         >
                           Xem giỏ hàng
                         </Link>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className='flex'>
+                      <div className='my-auto flex w-[400px] flex-col items-center py-[60px] '>
+                        <img
+                          src='https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/9bdd8040b334d31946f49e36beaf32db.png'
+                          alt='purchase'
+                          className='h-[100px] w-[100px]'
+                        />
+                        <span className='mt-5 capitalize text-gray-500'>Chưa có sản phẩm</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               }
             >
-              <Link to='/'>
+              <Link to='/' className='relative'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
                   fill='none'
@@ -296,6 +256,11 @@ export default function Header() {
                     d='M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z'
                   />
                 </svg>
+                {isAuthenticated && (
+                  <span className='absolute left-6 top-[-8px] rounded-full bg-white px-[9px] py-[1px] text-xs text-orange'>
+                    {purchasesInCart?.length}
+                  </span>
+                )}
               </Link>
             </Popover>
           </div>

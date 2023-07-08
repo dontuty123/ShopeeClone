@@ -1,12 +1,12 @@
 import React, { InputHTMLAttributes, forwardRef } from 'react'
 
-interface InputType extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputNumberType extends InputHTMLAttributes<HTMLInputElement> {
   classNameInput?: string
   classNameError?: string
   errorMessage?: string
 }
 
-const InputNumber = forwardRef<HTMLInputElement, InputType>(function InputNumberInner(
+const InputNumber = forwardRef<HTMLInputElement, InputNumberType>(function InputNumberInner(
   {
     className,
     errorMessage,

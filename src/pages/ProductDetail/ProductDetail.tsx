@@ -1,17 +1,26 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import DOMPurify from 'dompurify'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import productApi from 'src/apis/product.api'
-import InputNumber from 'src/components/InputNumber'
 import ProductRating from 'src/components/ProductRating'
 import { ProductListConfig } from 'src/types/product.type'
 import { formatCurrency, formatNumberToSocialStyle, getIdFromNameId, rateSale } from 'src/utils/utils'
 import Product from '../ProductList/components/Product'
 import { toast } from 'react-toastify'
+import QuantityController from 'src/components/QuantityController/QuantityController'
+import purchaseApi from 'src/apis/pruchase.api'
+import { PurchasesStatus } from 'src/constants/pruchase'
+
+interface addToCartType {
+  product_id: string
+  buy_count: number
+}
 
 export default function ProductDetail() {
+  const [buyCount, setBuyCount] = useState(1)
   const { nameId } = useParams()
+  const queryClient = useQueryClient()
   const id = getIdFromNameId(nameId as string)
   const [currentIndexImages, setCurrentIndexImage] = useState([0, 5])
   const [activeImage, setActiveImage] = useState('')
@@ -38,6 +47,10 @@ export default function ProductDetail() {
     staleTime: 3 * 60 * 1000,
   })
 
+  const addToCartMutation = useMutation({
+    mutationFn: (body: addToCartType) => purchaseApi.addToCart(body),
+  })
+
   useEffect(() => {
     if (product && product.images.length > 0) {
       setActiveImage(product.images[0])
@@ -60,14 +73,31 @@ export default function ProductDetail() {
     }
   }
 
+  const handleBuyCount = (value: number) => {
+    setBuyCount(value)
+  }
+
+  const addToCart = () => {
+    addToCartMutation.mutate(
+      { buy_count: buyCount, product_id: product?._id as string },
+      {
+        onSuccess: (data) => {
+          toast.success(data.data.message, { autoClose: 2000 })
+          queryClient.invalidateQueries({ queryKey: ['purchases', { status: PurchasesStatus.inCart }] })
+        },
+      },
+    )
+  }
+
   const handleZoom = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = event.currentTarget.getBoundingClientRect()
-
     const image = imageRef.current as HTMLImageElement
     const { naturalHeight, naturalWidth } = image
     const { offsetX, offsetY } = event.nativeEvent
+    // console.log('x', offsetX, 'y', offsetY)
     const top = offsetY * (1 - naturalHeight / rect.height)
     const left = offsetX * (1 - naturalWidth / rect.width)
+    // console.log('top', top, 'left', left)
     image.style.width = naturalWidth + 'px'
     image.style.height = naturalHeight + 'px'
     image.style.maxWidth = 'unset'
@@ -177,43 +207,18 @@ export default function ProductDetail() {
               </div>
               <div className='mt-8 flex items-center'>
                 <div className='capitalize text-gray-500'> Số lượng</div>
-                <div className='ml-10 flex  items-center'>
-                  <button className='flex h-8 w-8 items-center justify-center rounded-l-sm border border-gray-300 text-gray-600'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      strokeWidth={1.5}
-                      stroke='currentColor'
-                      className='h-4 w-4'
-                    >
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 12h-15' />
-                    </svg>
-                  </button>
-                  <InputNumber
-                    value={1}
-                    className=''
-                    classNameError='hidden'
-                    classNameInput='h-8 w-14 border-t border-b border-gray-300 p-1 text-center outline-none'
-                  />
-                  <button className='flex h-8 w-8 items-center justify-center rounded-r-sm border border-gray-300 text-gray-600'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      strokeWidth={1.5}
-                      stroke='currentColor'
-                      className='h-4 w-4'
-                    >
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
-                    </svg>
-                  </button>
-                </div>
+                <QuantityController
+                  onDecrease={handleBuyCount}
+                  onIncrease={handleBuyCount}
+                  onType={handleBuyCount}
+                  value={buyCount}
+                  max={product.quantity}
+                />
                 <div className='text-sm-text-gray-500 ml-6'>{product.quantity} Sản phẩm có sẵn</div>
               </div>
               <div className='mt-8 flex items-center'>
                 <button
-                  onClick={toasting}
+                  onClick={addToCart}
                   className='flex h-12 items-center justify-center rounded-sm border border-orange bg-orange/10 px-5 capitalize text-orange shadow-sm hover:bg-orange/5 '
                 >
                   <svg
