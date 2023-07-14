@@ -1,6 +1,7 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { AxiosError, HttpStatusCode, type AxiosInstance } from 'axios'
 import { AuthResponse } from 'src/types/auth.type'
 import { clearLS, getAccessTokenFromLS, saveAccessTokenToLS, saveProfileToLS } from './auth'
+import { toast } from 'react-toastify'
 
 class Http {
   instance: AxiosInstance
@@ -27,18 +28,32 @@ class Http {
       },
     )
 
-    this.instance.interceptors.response.use((response) => {
-      const url = response.config.url
-      if (url === 'login' || url === 'register') {
-        this.accessToken = (response.data as AuthResponse).data.access_token
-        saveAccessTokenToLS(this.accessToken)
-        saveProfileToLS((response.data as AuthResponse).data.user)
-      } else if (url === 'logout') {
-        this.accessToken = ''
-        clearLS()
-      }
-      return response
-    })
+    this.instance.interceptors.response.use(
+      (response) => {
+        const url = response.config.url
+        if (url === 'login' || url === 'register') {
+          this.accessToken = (response.data as AuthResponse).data.access_token
+          saveAccessTokenToLS(this.accessToken)
+          saveProfileToLS((response.data as AuthResponse).data.user)
+        } else if (url === 'logout') {
+          this.accessToken = ''
+          clearLS()
+        }
+        return response
+      },
+      function (error: AxiosError) {
+        if (error.response?.status === HttpStatusCode.UnprocessableEntity) {
+          const data: any | undefined = error.response.data
+          const message = data.message || error.message
+          toast.error(message)
+        }
+        if (error.response?.status === HttpStatusCode.Unauthorized) {
+          clearLS()
+          window.location.reload()
+        }
+        return Promise.reject(error)
+      },
+    )
   }
 }
 

@@ -118,7 +118,7 @@ export default function Header() {
               renderPopover={
                 <div className='relative  ml-[-4rem] rounded-sm border border-gray-200  bg-white  shadow-md'>
                   <div className='flex flex-col items-start px-3 py-2'>
-                    <Link to='/profile' className=' px-3 py-2 hover:text-cyan-500'>
+                    <Link to={path.profile} className=' px-3 py-2 hover:text-cyan-500'>
                       Tài khoản của tôi
                     </Link>
                     <Link to='/' className='mt-2 px-3  py-2 hover:text-cyan-500'>
@@ -133,12 +133,16 @@ export default function Header() {
             >
               <div className='mr-2 h-5 w-5 flex-shrink-0'>
                 <img
-                  src='https://down-vn.img.susercontent.com/file/sg-11134004-7qvct-lildp46kjsh623_tn'
+                  src={
+                    profile?.avatar
+                      ? `https://api-ecom.duthanhduoc.com/images/${profile.avatar}`
+                      : 'https://down-vn.img.susercontent.com/file/vn-11134226-7qukw-lizl9wkfx1aqe8_tn'
+                  }
                   alt='avatar'
                   className='h-full w-full rounded-full object-cover'
                 />
               </div>
-              <div>{profile?.email}</div>
+              <div>{profile?.name ? profile.name : profile?.email}</div>
             </Popover>
           )}
 
@@ -241,7 +245,7 @@ export default function Header() {
                 </div>
               }
             >
-              <Link to='/' className='relative'>
+              <Link to={path.cart} className='relative'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
                   fill='none'

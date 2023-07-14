@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import DOMPurify from 'dompurify'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import productApi from 'src/apis/product.api'
 import ProductRating from 'src/components/ProductRating'
 import { ProductListConfig } from 'src/types/product.type'
@@ -11,6 +11,7 @@ import { toast } from 'react-toastify'
 import QuantityController from 'src/components/QuantityController/QuantityController'
 import purchaseApi from 'src/apis/pruchase.api'
 import { PurchasesStatus } from 'src/constants/pruchase'
+import path from 'src/constants/path'
 
 interface addToCartType {
   product_id: string
@@ -25,6 +26,7 @@ export default function ProductDetail() {
   const [currentIndexImages, setCurrentIndexImage] = useState([0, 5])
   const [activeImage, setActiveImage] = useState('')
   const imageRef = useRef<HTMLImageElement>(null)
+  const navigate = useNavigate()
 
   const { data: productDetailData } = useQuery({
     queryKey: ['product', id],
@@ -87,6 +89,16 @@ export default function ProductDetail() {
         },
       },
     )
+  }
+
+  const buyNow = async () => {
+    const res = await addToCartMutation.mutateAsync({ buy_count: buyCount, product_id: product?._id as string })
+    const purchase = res.data.data
+    navigate(path.cart, {
+      state: {
+        purchaseId: purchase._id,
+      },
+    })
   }
 
   const handleZoom = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -247,7 +259,7 @@ export default function ProductDetail() {
                   Thêm vào giỏ hàng
                 </button>
                 <button
-                  onClick={toasting}
+                  onClick={buyNow}
                   className=' ml-4 flex h-12 min-w-[5rem] items-center rounded-sm bg-orange px-5 capitalize text-white shadow-sm outline-none hover:bg-orange/90'
                 >
                   Mua ngay
