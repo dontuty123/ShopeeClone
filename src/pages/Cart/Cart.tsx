@@ -105,7 +105,7 @@ export default function Cart() {
         draft[purchaseIndex].disabled = true
       }),
     )
-    if (value >= 1 && value <= purchase.product.quantity && value !== purchase.buy_count) {
+    if (value >= 1 && value <= purchase.product.quantity) {
       updatePurchaseMutation.mutate({ product_id: purchase.product._id, buy_count: value })
     }
 

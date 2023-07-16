@@ -13,6 +13,7 @@ import Profile from './pages/User/pages/Profile'
 import ChangePassword from './pages/User/pages/ChangePassword'
 import UserLayout from './pages/User/layout/UserLayout'
 import HistoryPurchase from './pages/User/pages/HistoryPurchase'
+import PageNotFound from './pages/PageNotFound'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -104,6 +105,14 @@ export default function useRouteElements() {
           ),
         },
       ],
+    },
+    {
+      path: '*',
+      element: (
+        <MainLayout>
+          <PageNotFound />
+        </MainLayout>
+      ),
     },
   ])
   return routeElements

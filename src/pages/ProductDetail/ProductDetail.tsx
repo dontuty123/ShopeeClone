@@ -121,10 +121,6 @@ export default function ProductDetail() {
     imageRef.current?.removeAttribute('style')
   }
 
-  const toasting = () => {
-    toast.warning('Tính năng đang được phát triển')
-  }
-
   if (!product) {
     return null
   }
